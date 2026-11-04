@@ -1,0 +1,632 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenPictalis</title>
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<style>
+@font-face{font-family:'Bricolage Grotesque';src:url(/assets/fonts/BricolageGrotesque.woff2) format('woff2');font-weight:200 800;font-display:swap}
+@font-face{font-family:'IBM Plex Mono';src:url(/assets/fonts/IBMPlexMono-400.woff2) format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:'IBM Plex Mono';src:url(/assets/fonts/IBMPlexMono-500.woff2) format('woff2');font-weight:500;font-display:swap}
+:root{
+  --ground:#0B0C10;--panel:#12141A;--raise:#1A1D26;--line:#23262F;--edge:#2A2E39;
+  --text:#E8E6E1;--cream:#F4F1EA;--muted:#9A9DA8;--dim:#6B6E79;
+  --amber:#FFB547;--rose:#FF5C8A;--indigo:#6C7CFF;--teal:#2FD6C5;
+  --display:'Bricolage Grotesque',system-ui,sans-serif;--mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%;background:var(--ground);color:var(--text);font-family:var(--display)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--indigo);outline-offset:2px}
+
+/* header */
+header{height:64px;display:flex;align-items:center;gap:14px;padding:0 24px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none}
+.brand svg{width:26px;height:26px}
+.word{font-size:21px;font-weight:700;letter-spacing:-.02em}
+.word .o{color:var(--muted)}
+/* Brand motion (from the brand sheet): petals pulse through the four accents and a colour band sweeps the wordmark every 7 s. */
+.pw{background:linear-gradient(90deg,var(--cream) 0,var(--cream) 36%,var(--amber) 42%,var(--rose) 50%,var(--indigo) 56%,var(--teal) 62%,var(--cream) 66%,var(--cream) 100%);background-size:300% 100%;background-position:100% 0;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:sw 7s ease-in-out infinite}
+@keyframes sw{0%{background-position:100% 0}100%{background-position:0 0}}
+.logo path{fill:var(--c);animation:pl 7s ease-in-out infinite backwards}.logo rect{fill:var(--ground)}
+.logo path:nth-child(1){--c:var(--amber)}.logo path:nth-child(2){--c:var(--rose);animation-delay:.2s}.logo path:nth-child(3){--c:var(--indigo);animation-delay:.4s}.logo path:nth-child(4){--c:var(--teal);animation-delay:.6s}
+@keyframes pl{0%,8%{fill:var(--cream)}22%,46%{fill:var(--c)}62%,100%{fill:var(--cream)}}
+body.busy .logo path{animation-duration:2.8s}body.busy .pw{animation-duration:2.8s}
+@media (prefers-reduced-motion:reduce){.pw{background-position:50% 0}}
+.spacer{flex:1}
+.status{font:13px var(--mono);color:var(--muted);display:flex;align-items:center;gap:8px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--teal)}
+.dot.warn{background:var(--amber)}.dot.bad{background:var(--rose)}
+.btn{background:transparent;border:1px solid var(--edge);border-radius:8px;padding:9px 15px;font:500 14px var(--mono);color:var(--cream)}
+.btn:hover:not(:disabled){background:var(--raise);border-color:#3A3F4D}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.ghost{border-color:transparent;color:var(--muted)}
+.btn.ghost:hover{color:var(--cream)}
+
+/* layout */
+main{display:grid;grid-template-columns:348px minmax(0,1fr) 312px;gap:14px;padding:14px;height:calc(100vh - 64px)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;min-height:0}
+.left{display:flex;flex-direction:column;gap:14px;min-height:0}
+.left .panel{flex:1;overflow:auto}
+label.k,.k{display:block;font:500 11px var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:0 0 9px}
+.k b{color:var(--cream);font-weight:500}
+textarea,input[type=text],input[type=number],select{width:100%;background:var(--ground);border:1px solid var(--edge);border-radius:10px;padding:12px 13px;font:14px/1.45 var(--mono);color:var(--text)}
+textarea{resize:vertical}
+textarea::placeholder,input::placeholder{color:var(--dim)}
+select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 17px) 52%,calc(100% - 12px) 52%;background-size:5px 5px;background-repeat:no-repeat;padding-right:32px}
+.field{margin-bottom:16px}
+
+.modes{display:grid;grid-template-columns:repeat(3,1fr);background:var(--ground);border:1px solid var(--edge);border-radius:10px;padding:3px;gap:3px;margin-bottom:18px}
+.modes button{border:0;background:transparent;border-radius:7px;padding:8px 2px;font:500 12px var(--mono);color:var(--muted);white-space:nowrap}
+.modes button[aria-pressed=true]{background:var(--raise);color:var(--cream);box-shadow:inset 0 0 0 1px var(--edge)}
+.modes button:disabled{opacity:.35;cursor:not-allowed}
+.modes button .sw{display:inline-block;width:7px;height:7px;border-radius:2px;margin-right:6px;vertical-align:1px}
+
+.refs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.ref{aspect-ratio:1/.75;border:1px dashed var(--edge);border-radius:10px;background:transparent;font:13px var(--mono);color:var(--muted);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.ref:hover{border-color:var(--muted);color:var(--cream)}
+.ref img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.ref.filled{border-style:solid}
+.ref .x{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:6px;border:0;background:rgba(11,12,16,.8);color:var(--cream);font-size:14px;line-height:1;display:none}
+.ref.filled:hover .x{display:block}
+.hint{font:12px/1.5 var(--mono);color:var(--dim);margin:8px 0 0}
+.drop{outline:2px dashed var(--indigo);outline-offset:4px}
+
+.go{margin-top:auto;padding-top:16px}
+.generate{width:100%;border:0;border-radius:10px;padding:15px;background:var(--amber);color:#14110A;font:700 17px var(--display);letter-spacing:-.01em}
+.generate:hover{filter:brightness(1.06)}
+.generate.stop{background:var(--rose);color:#1A0710}
+.kbd{font:11px var(--mono);color:var(--dim);text-align:center;margin-top:8px}
+
+.gallery{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 4px;min-height:80px;flex:none}
+.thumb{flex:none;width:76px;height:76px;border-radius:9px;border:1px solid var(--edge);padding:0;background:var(--panel);overflow:hidden;position:relative}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb.on{outline:2px solid var(--amber);outline-offset:1px}
+.thumb.alpha{background:conic-gradient(#1d2029 25%,#14161c 0 50%,#1d2029 0 75%,#14161c 0) 0 0/12px 12px}
+.thumb.ph{background:linear-gradient(135deg,var(--amber),var(--indigo));opacity:.85}
+.thumb.ph:nth-child(2){background:linear-gradient(135deg,var(--rose),var(--teal))}
+.thumb.ph:nth-child(3){background:linear-gradient(135deg,var(--indigo),var(--rose))}
+.thumb.ph:nth-child(4){background:linear-gradient(135deg,var(--teal),var(--amber))}
+
+/* center */
+.center{display:flex;flex-direction:column;gap:12px;min-height:0;min-width:0}
+.stage{flex:1;position:relative;background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;min-height:0}
+.stage.alpha{background:conic-gradient(#191b22 25%,#111318 0 50%,#191b22 0 75%,#111318 0) 0 0/24px 24px}
+.view{position:absolute;inset:0;overflow:auto;display:flex}
+.view img{margin:auto;display:block}
+.view.fit img{max-width:100%;max-height:100%;object-fit:contain}
+.glow{position:absolute;inset:0;background:radial-gradient(circle at 70% 28%,rgba(255,181,71,.85),rgba(255,181,71,0) 34%),radial-gradient(circle at 24% 72%,rgba(108,124,255,.85),rgba(108,124,255,0) 38%),radial-gradient(circle at 62% 88%,rgba(255,92,138,.8),rgba(255,92,138,0) 34%);filter:blur(36px);opacity:.75;transition:opacity .4s}
+body.busy .glow{animation:breathe 4s ease-in-out infinite}
+@keyframes breathe{50%{opacity:.4;transform:scale(1.04)}}
+.empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;padding:24px}
+.empty h2{margin:0;font-size:30px;letter-spacing:-.02em;color:var(--cream)}
+.empty p{margin:0;font:14px var(--mono);color:var(--text);opacity:.85}
+.badge{position:absolute;left:16px;bottom:16px;background:rgba(11,12,16,.86);border:1px solid var(--edge);border-radius:8px;padding:7px 11px;font:13px var(--mono);color:var(--cream);backdrop-filter:blur(6px);max-width:calc(100% - 32px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.progress{position:absolute;left:16px;right:16px;top:16px;display:none;gap:10px;flex-direction:column}
+body.busy .progress{display:flex}
+.bar{height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--amber),var(--rose),var(--indigo),var(--teal));transition:width .4s}
+.bar.indef i{width:30%;animation:slide 1.4s ease-in-out infinite}
+@keyframes slide{0%{margin-left:-30%}100%{margin-left:100%}}
+.ptext{display:flex;justify-content:space-between;font:12px var(--mono);color:var(--cream);text-shadow:0 1px 3px #000}
+.log{position:absolute;inset:auto 16px 60px 16px;max-height:45%;overflow:auto;background:rgba(11,12,16,.92);border:1px solid var(--edge);border-radius:10px;padding:12px;font:11px/1.5 var(--mono);color:var(--muted);white-space:pre-wrap;display:none;margin:0}
+.log.show{display:block}
+.err{position:absolute;left:16px;right:16px;top:16px;background:rgba(40,12,22,.95);border:1px solid #5A2034;border-radius:10px;padding:12px 14px;font:13px/1.5 var(--mono);color:#FFD3DF;display:none}
+.err.show{display:block}
+.err button{margin-left:10px;background:none;border:0;color:var(--cream);text-decoration:underline;font:inherit;padding:0}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.tools .btn{padding:9px 12px;font-size:13px}
+.tools .grow{flex:1}
+
+/* right */
+.right{overflow:auto}
+.model-card{border:1px solid var(--line);border-radius:10px;padding:12px;margin:10px 0 18px;font:12px/1.55 var(--mono);color:var(--muted)}
+.model-card .row{display:flex;align-items:center;gap:8px;color:var(--cream);margin-bottom:6px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.chip{font:11px var(--mono);border:1px solid var(--edge);border-radius:6px;padding:3px 7px;color:var(--muted);background:var(--ground)}
+.chip.on{color:var(--cream)}
+.links{display:flex;flex-wrap:wrap;gap:12px;margin-top:8px}
+.links a{color:var(--cream);text-decoration:none;border-bottom:1px solid var(--edge)}
+.links a:hover{border-color:var(--amber)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--amber) var(--pct,50%),#2A2E39 var(--pct,50%));margin:6px 0 20px;padding:0;border:0}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--amber);border:3px solid var(--panel);box-shadow:0 0 0 1px var(--amber)}
+input[type=range]:disabled{opacity:.35}
+.toggle{display:flex;align-items:center;gap:10px;font:13px var(--mono);color:var(--text);margin:-4px 0 18px;cursor:pointer}
+.toggle input{accent-color:var(--amber);width:16px;height:16px;margin:0}
+.toggle small{color:var(--dim);display:block;font-size:11px}
+.aspects{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:10px}
+.aspects button{border:1px solid var(--edge);background:var(--ground);border-radius:7px;padding:7px 0;font:12px var(--mono);color:var(--muted)}
+.aspects button[aria-pressed=true]{border-color:var(--amber);color:var(--cream)}
+.custom{display:flex;gap:8px;align-items:center;margin-bottom:10px;font:14px var(--mono);color:var(--muted)}
+.custom input{flex:1;min-width:0}
+.seed{display:flex;gap:8px}
+.seed input{flex:1}
+.seed .btn{padding:0 12px}
+.foot{margin-top:auto;display:flex;gap:8px;padding-top:12px}
+.foot .btn{flex:1;font-size:12px;padding:8px}
+
+/* dialogs */
+dialog{background:var(--panel);color:var(--text);border:1px solid var(--edge);border-radius:16px;padding:0;width:min(880px,calc(100vw - 32px));max-height:calc(100vh - 48px)}
+dialog::backdrop{background:rgba(5,6,8,.72);backdrop-filter:blur(3px)}
+.dh{display:flex;align-items:center;padding:18px 22px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:1}
+.dh h3{margin:0;font-size:22px;letter-spacing:-.02em}
+.db{padding:20px 22px}
+.mlist{display:grid;gap:10px}
+.mrow{border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;grid-template-columns:1fr auto;gap:6px 16px;align-items:start}
+.mrow.cur{border-color:var(--amber)}
+.mrow h4{margin:0;font-size:17px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.mrow p{margin:2px 0 0;font:12px/1.55 var(--mono);color:var(--muted)}
+.mrow .side{display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+.tag{font:10px var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;border-radius:5px;border:1px solid var(--edge);color:var(--muted)}
+.tag.ok{color:var(--teal);border-color:#1F5A55}.tag.dl{color:var(--amber);border-color:#5C4420}.tag.no{color:var(--rose);border-color:#5A2034}
+.section-t{font:500 11px var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:26px 0 10px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px}
+.grid2 .full{grid-column:1/-1}
+.checks{display:flex;gap:16px;font:13px var(--mono);padding:10px 0}
+.checks label{display:flex;gap:6px;align-items:center}
+code,.code{font:12px var(--mono);background:var(--ground);border:1px solid var(--line);border-radius:6px;padding:2px 6px;color:var(--cream)}
+.uplist{display:grid;gap:8px;margin-bottom:18px}
+.uprow{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:start;border:1px solid var(--line);border-radius:12px;padding:12px 14px;cursor:pointer}
+.uprow:has(input:checked){border-color:var(--amber);background:var(--raise)}
+.uprow.off{opacity:.55;cursor:not-allowed}
+.uprow input{accent-color:var(--amber);margin:4px 0 0}
+.uprow h4{margin:0;font-size:16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.uprow p{margin:2px 0 0;font:12px/1.55 var(--mono);color:var(--muted)}
+.scales{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.scales button{border:1px solid var(--edge);background:var(--ground);border-radius:8px;padding:9px 18px;font:500 14px var(--mono);color:var(--muted)}
+.scales button[aria-pressed=true]{border-color:var(--amber);color:var(--cream)}
+.scales button:disabled{opacity:.35;cursor:not-allowed}
+.updims{font:13px var(--mono);color:var(--cream);margin-left:8px}
+.upgo{margin-top:20px;width:auto;padding:13px 28px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--raise);border:1px solid var(--edge);border-radius:10px;padding:10px 16px;font:13px var(--mono);opacity:0;transition:opacity .25s;pointer-events:none;z-index:9}
+.toast.show{opacity:1}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+@media (max-width:1100px){main{grid-template-columns:320px minmax(0,1fr)}.right{grid-column:1/-1}main{height:auto}.stage{min-height:60vh}}
+@media (max-width:720px){main{grid-template-columns:1fr;padding:10px}header{padding:0 16px}.status span{display:none}.grid2{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="/" aria-label="OpenPictalis">
+    <svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 32C32 15 43 7 54 9C56 20 49 32 32 32Z"/><path d="M32 32C32 15 43 7 54 9C56 20 49 32 32 32Z" transform="rotate(90 32 32)"/><path d="M32 32C32 15 43 7 54 9C56 20 49 32 32 32Z" transform="rotate(180 32 32)"/><path d="M32 32C32 15 43 7 54 9C56 20 49 32 32 32Z" transform="rotate(270 32 32)"/><rect x="29" y="29" width="6" height="6"/></svg>
+    <span class="word"><span class="o">Open</span><span class="pw">Pictalis</span></span>
+  </a>
+  <div class="spacer"></div>
+  <div class="status" id="status" role="status"><i class="dot" id="statusDot"></i><span id="statusText">Connecting…</span></div>
+  <button class="btn" id="exportBtn" disabled>Export PNG</button>
+</header>
+
+<main>
+  <div class="left">
+    <section class="panel" aria-label="Prompt">
+      <div class="modes" role="group" aria-label="Mode">
+        <button data-mode="generate" aria-pressed="true"><i class="sw" style="background:var(--amber)"></i>Image</button>
+        <button data-mode="reference" aria-pressed="false"><i class="sw" style="background:var(--indigo)"></i>Reference</button>
+        <button data-mode="transparent" aria-pressed="false"><i class="sw" style="background:var(--teal)"></i>Transparent</button>
+      </div>
+      <div class="field">
+        <label class="k" for="prompt">Prompt</label>
+        <textarea id="prompt" rows="6" placeholder="A lighthouse at dusk, long exposure, amber light on violet water"></textarea>
+      </div>
+      <div class="field" id="negField">
+        <label class="k" for="negative">Negative prompt</label>
+        <textarea id="negative" rows="2" placeholder="blurry, low detail"></textarea>
+      </div>
+      <div class="field" id="refField" hidden>
+        <span class="k">Reference images <b id="refCount"></b></span>
+        <div class="refs" id="refs"></div>
+        <p class="hint" id="refHint">Drop, paste or add images. Describe the change in the prompt, e.g. “make it a watercolor”.</p>
+        <input type="file" id="refFile" accept="image/png,image/jpeg,image/webp" multiple hidden>
+      </div>
+      <p class="hint" id="transHint" hidden>Transparent mode returns a PNG with an alpha channel. Describe one subject; the background is removed by the model.</p>
+      <div class="go">
+        <button class="generate" id="generate">Generate</button>
+        <div class="kbd">⌘ Enter</div>
+      </div>
+    </section>
+    <div class="gallery" id="gallery" aria-label="Recent images"></div>
+  </div>
+
+  <div class="center">
+    <div class="stage" id="stage">
+      <div class="glow" id="glow"></div>
+      <div class="empty" id="empty"><h2>Make something.</h2><p>Write a prompt and press Generate.</p></div>
+      <div class="view fit" id="view" hidden><img id="img" alt=""></div>
+      <div class="progress"><div class="bar indef" id="bar"><i></i></div><div class="ptext"><span id="pLeft">Loading model…</span><span id="pRight">0 s</span></div></div>
+      <div class="err" id="err"></div>
+      <pre class="log" id="log"></pre>
+      <div class="badge" id="badge">Preview · no image yet</div>
+    </div>
+    <div class="tools">
+      <button class="btn" id="fitBtn" aria-pressed="true">Fit</button>
+      <button class="btn" id="fullBtn" aria-pressed="false">100%</button>
+      <button class="btn" id="useRef" disabled>Use as reference</button>
+      <button class="btn ghost" id="logBtn">Details</button>
+      <div class="grow"></div>
+      <button class="btn ghost" id="delBtn" disabled>Remove</button>
+      <button class="btn" id="upBtn" disabled>Upscale</button>
+      <button class="btn" id="editBtn" disabled>Edit image</button>
+    </div>
+  </div>
+
+  <aside class="panel right" aria-label="Settings">
+    <label class="k" for="model">Model</label>
+    <select id="model"></select>
+    <div class="model-card" id="modelCard"></div>
+    <label class="toggle" id="turboRow" hidden><input type="checkbox" id="turbo"><span><span id="turboLabel">Turbo</span><small id="turboNote"></small></span></label>
+    <label class="k" for="steps">Steps · <b id="stepsVal"></b></label>
+    <input type="range" id="steps" min="0" max="60" step="1">
+    <label class="k" for="guidance">Guidance · <b id="guidanceVal"></b></label>
+    <input type="range" id="guidance" min="0" max="10" step="0.5">
+    <span class="k">Size</span>
+    <div class="aspects" id="aspects"></div>
+    <select id="size" aria-label="Size" style="margin-bottom:10px"></select>
+    <div class="custom" id="customSize" hidden><input type="number" id="cw" min="256" max="4096" step="16" aria-label="Width"><span>×</span><input type="number" id="ch" min="256" max="4096" step="16" aria-label="Height"></div>
+    <p class="hint" id="sizeNote" style="margin:0 0 18px"></p>
+    <label class="k" for="seed">Seed</label>
+    <div class="seed"><input type="text" id="seed" inputmode="numeric" placeholder="random"><button class="btn" id="dice" title="New random seed" aria-label="New random seed">⚄</button></div>
+    <label class="toggle" style="margin-top:12px"><input type="checkbox" id="keepSeed"><span>Keep seed<small>Off: a new seed every render</small></span></label>
+    <div class="foot"><button class="btn" id="modelsBtn">Models</button><button class="btn" id="settingsBtn">Settings</button></div>
+  </aside>
+</main>
+
+<dialog id="modelsDlg" aria-labelledby="modelsTitle">
+  <div class="dh"><h3 id="modelsTitle">Models</h3><div class="spacer"></div><button class="btn ghost" data-close>Close</button></div>
+  <div class="db">
+    <p class="hint" style="margin:0 0 16px">Swap models any time from the Model menu. Suggested models download from Hugging Face on first use. Check each model’s license before commercial use.</p>
+    <div class="mlist" id="mlist"></div>
+    <div class="section-t">Upscalers</div>
+    <div class="mlist" id="ulist"></div>
+    <div class="section-t">Engines</div>
+    <div class="mlist" id="elist"></div>
+    <div class="section-t">Add a model</div>
+    <form id="addForm" class="grid2">
+      <div><label class="k" for="aName">Name</label><input type="text" id="aName" required placeholder="My fine-tune"></div>
+      <div><label class="k" for="aEngine">Engine</label><select id="aEngine"><option value="mflux">mflux</option><option value="drawthings">Draw Things CLI</option><option value="command">Custom command</option></select></div>
+      <div data-eng="mflux"><label class="k" for="aCommand">mflux command</label><input type="text" id="aCommand" placeholder="mflux-generate-qwen-2.1-edit"></div>
+      <div data-eng="mflux drawthings"><label class="k" for="aModel">Model</label><input type="text" id="aModel" placeholder="owner/repo, alias, path or .ckpt file"></div>
+      <div data-eng="mflux"><label class="k" for="aBase">Base model (optional)</label><input type="text" id="aBase" placeholder="qwen-image-2.1"></div>
+      <div data-eng="mflux"><label class="k" for="aQuant">Quantize (optional)</label><select id="aQuant"><option value="">none</option><option>4</option><option>6</option><option>8</option></select></div>
+      <div class="full" data-eng="command"><label class="k" for="aTemplate">Command template</label><input type="text" id="aTemplate" placeholder="my-gen --prompt {prompt} --w {width} --h {height} --seed {seed} {refs} -o {output}"></div>
+      <div><label class="k" for="aSteps">Default steps</label><input type="text" id="aSteps" placeholder="auto"></div>
+      <div><label class="k" for="aGuidance">Default guidance</label><input type="text" id="aGuidance" placeholder="auto"></div>
+      <div class="full"><label class="k" for="aLink">Model page link</label><input type="text" id="aLink" placeholder="https://huggingface.co/…"></div>
+      <div class="full checks"><label><input type="checkbox" name="am" value="generate" checked> Image</label><label><input type="checkbox" name="am" value="reference"> Reference</label><label><input type="checkbox" name="am" value="transparent"> Transparent</label></div>
+      <div class="full"><button class="btn" type="submit">Add model</button></div>
+    </form>
+  </div>
+</dialog>
+
+<dialog id="settingsDlg" aria-labelledby="settingsTitle">
+  <div class="dh"><h3 id="settingsTitle">Settings</h3><div class="spacer"></div><button class="btn ghost" data-close>Close</button></div>
+  <form class="db grid2" id="settingsForm">
+    <div class="full"><label class="k" for="sOut">Save images to</label><input type="text" id="sOut" name="output_dir"></div>
+    <div class="full"><label class="k" for="sLora">LoRA folder</label><input type="text" id="sLora" name="lora_dir"></div>
+    <div class="full"><label class="k" for="sDt">Draw Things CLI (blank = find on PATH)</label><input type="text" id="sDt" name="drawthings_cli"></div>
+    <div class="full"><label class="k" for="sDtm">Draw Things models folder</label><input type="text" id="sDtm" name="drawthings_models_dir"></div>
+    <div class="full"><label class="k" for="sEs">Real-ESRGAN binary (blank = find on PATH)</label><input type="text" id="sEs" name="realesrgan_cli"></div>
+    <div class="full"><label class="k" for="sEsm">Real-ESRGAN models folder (blank = models/ beside the binary)</label><input type="text" id="sEsm" name="realesrgan_models_dir"></div>
+    <div class="full"><label class="k" for="sHf">Hugging Face cache</label><input type="text" id="sHf" name="hf_cache"></div>
+    <div class="full"><button class="btn" type="submit">Save settings</button> <span class="hint" id="verLine"></span></div>
+  </form>
+</dialog>
+
+<dialog id="upDlg" aria-labelledby="upTitle">
+  <div class="dh"><h3 id="upTitle">Upscale</h3><div class="spacer"></div><button class="btn ghost" data-close>Close</button></div>
+  <div class="db">
+    <span class="k">Upscaler</span>
+    <div class="uplist" id="uplist"></div>
+    <span class="k">Scale</span>
+    <div class="scales" id="scales"><button type="button" data-s="2">2×</button><button type="button" data-s="4">4×</button><span class="updims" id="updims"></span></div>
+    <button class="generate upgo" id="upGo">Upscale</button>
+    <p class="hint">The original stays in your library; the upscaled copy is saved as a new image.</p>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const MODE_NAMES={generate:'Image',reference:'Reference',transparent:'Transparent',upscale:'Upscale'};
+const ASPECTS=[['1:1',1,1],['4:5',4,5],['3:4',3,4],['2:3',2,3],['9:16',9,16],['16:9',16,9],['3:2',3,2],['4:3',4,3],['5:4',5,4],['21:9',21,9]];
+const TIERS=[['Draft',512],['Medium',768],['Standard',1024],['Large',1328],['XL',1536],['2K',2048]];
+const S={token:'',models:[],engines:{},settings:{},library:[],mode:'generate',modelId:'',refs:[],current:null,busy:false,aspect:'1:1',tier:1024,full:false};
+const store={get(k,d){try{const v=localStorage.getItem('op.'+k);return v===null?d:JSON.parse(v)}catch{return d}},set(k,v){try{localStorage.setItem('op.'+k,JSON.stringify(v))}catch{}}};
+
+async function api(path,body){
+  const r=await fetch(path,body===undefined?{}:{method:'POST',headers:{'Content-Type':'application/json','X-Token':S.token},body:JSON.stringify(body)});
+  const data=await r.json().catch(()=>({error:'The server sent an unreadable reply.'}));
+  if(!r.ok)throw new Error(data.error||'Request failed.');
+  return data;
+}
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),2600)}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+const model=()=>S.models.find(m=>m.id===S.modelId);
+
+/* ---------- models ---------- */
+function pickModelFor(mode){
+  const ok=m=>m.modes.includes(mode)&&m.status!=='missing';
+  return S.models.find(m=>m.id===S.modelId&&ok(m))||S.models.find(m=>ok(m)&&m.status==='ready')||S.models.find(ok)||S.models.find(m=>m.modes.includes(mode));
+}
+function renderModelSelect(){
+  const sel=$('#model');sel.innerHTML='';
+  const groups={};
+  for(const m of S.models){(groups[m.source==='custom'?'Your models':m.family]??=[]).push(m)}
+  for(const [g,list] of Object.entries(groups)){
+    const og=document.createElement('optgroup');og.label=g;
+    for(const m of list){const o=new Option(m.name+(m.status==='ready'?'':m.status==='download'?'  ↓':'  ✕'),m.id);o.disabled=!m.modes.includes(S.mode);og.append(o)}
+    sel.append(og);
+  }
+  sel.value=S.modelId;
+}
+function statusTag(m){return m.status==='ready'?'<span class="tag ok">Ready</span>':m.status==='download'?'<span class="tag dl">Downloads on first use</span>':'<span class="tag no">Not installed</span>'}
+function linksHTML(m){
+  const L=m.links||{},names={weights:'Model page ↗',upstream:'Original ↗',engine:'Engine ↗'};
+  return Object.entries(L).map(([k,u])=>`<a href="${esc(u)}" target="_blank" rel="noopener">${names[k]||k}</a>`).join('');
+}
+function renderModelCard(){
+  const m=model();if(!m){$('#modelCard').textContent='No model available for this mode.';return}
+  $('#modelCard').innerHTML=`<div class="row">${statusTag(m)}<span>${esc(m.engine==='drawthings'?'Draw Things':m.engine==='command'?'Command':'mflux')}</span></div>
+    <div>${esc(m.status==='ready'?m.note:m.status_text)}</div>
+    <div class="chips">${['generate','reference','transparent'].map(x=>`<span class="chip ${m.modes.includes(x)?'on':''}">${m.modes.includes(x)?'✓':'–'} ${MODE_NAMES[x]}</span>`).join('')}</div>
+    <div>${esc(m.license||'')}</div><div class="links">${linksHTML(m)}</div>`;
+  const t=m.turbo;$('#turboRow').hidden=!t;
+  if(t){$('#turboLabel').textContent=t.label;$('#turbo').disabled=!m.turbo_available;
+    $('#turboNote').innerHTML=m.turbo_available?'Fast mode. Sets steps and guidance.':`Not found. <a href="${esc(t.link)}" target="_blank" rel="noopener">Get ${esc(t.file)}</a> (${esc(t.download)}) → LoRA folder`;
+    if(!m.turbo_available)$('#turbo').checked=false}
+  syncSliders();renderSizes();
+}
+function setRange(el,val){el.value=val;const p=(val-el.min)/(el.max-el.min)*100;el.style.setProperty('--pct',p+'%')}
+function syncSliders(){
+  const m=model();if(!m)return;const turbo=$('#turbo').checked&&m.turbo;
+  const st=store.get('steps.'+m.id,null),gd=store.get('guidance.'+m.id,null);
+  const steps=turbo?m.turbo.steps:(st??m.steps??0),g=turbo?m.turbo.guidance:(gd??m.guidance);
+  setRange($('#steps'),steps);$('#stepsVal').textContent=steps?steps:'auto';$('#steps').disabled=!!turbo;
+  const noG=m.guidance===null&&!turbo;$('#guidance').disabled=!!turbo||noG;
+  setRange($('#guidance'),noG?0:g);$('#guidanceVal').textContent=noG?'n/a':Number(g).toFixed(1);
+}
+function sizesFor(m){
+  const [,aw,ah]=ASPECTS.find(a=>a[0]===S.aspect),u=m.size_unit||16,max=m.max_area||4194304,out=[];
+  for(const [name,side] of TIERS){
+    const area=side*side;if(area>max*1.0001)continue;
+    let w=Math.round(Math.sqrt(area*aw/ah)/u)*u,h=Math.round(Math.sqrt(area*ah/aw)/u)*u;
+    while(w*h>max){w-=u;h=Math.round(w*ah/aw/u)*u}
+    out.push({name,side,w,h});
+  }
+  return out;
+}
+function snap(v,u){return Math.max(256,Math.round((+v||0)/u)*u)}
+function renderSizes(){
+  const m=model();if(!m)return;
+  $('#aspects').innerHTML=ASPECTS.map(a=>`<button type="button" data-a="${a[0]}" aria-pressed="${a[0]===S.aspect}">${a[0]}</button>`).join('');
+  const list=sizesFor(m),sel=$('#size');sel.innerHTML='';
+  const fast=m.fast_area||m.max_area||4194304;
+  for(const s of list)sel.add(new Option(`${s.w} × ${s.h} · ${s.name}${s.w*s.h>fast*1.0001?' · slow':''}`,s.side));
+  sel.add(new Option('Custom…','custom'));
+  const best=S.tier==='custom'?{side:'custom'}:list.find(s=>s.side===S.tier)||list.filter(s=>s.side<=S.tier).pop()||list[0];
+  if(best)sel.value=best.side;
+  $('#customSize').hidden=sel.value!=='custom';
+  if(sel.value==='custom'){const c=store.get('custom',[1024,1024]);$('#cw').value=c[0];$('#ch').value=c[1]}
+  sizeNote();
+}
+function currentSize(){
+  const m=model();
+  if($('#size').value==='custom'){const u=m.size_unit||16;return {w:snap($('#cw').value,u),h:snap($('#ch').value,u)}}
+  return sizesFor(m).find(s=>s.side==$('#size').value)||sizesFor(m)[0];
+}
+function sizeNote(){
+  const m=model();if(!m)return;const s=currentSize(),max=m.max_area||4194304,fast=m.fast_area||max,mp=a=>(a/1e6).toFixed(1)+' MP';
+  let t=`Up to ${mp(max)} for this model.`;
+  if(s.w*s.h>max)t=`Too large: ${s.w} × ${s.h} is over this model's ${mp(max)} limit.`;
+  else if(s.w*s.h>fast)t=`Large size: slower and uses more memory. For final prints, Upscale is usually faster.`;
+  $('#sizeNote').textContent=t;$('#sizeNote').style.color=s.w*s.h>max?'var(--rose)':'';
+}
+
+/* ---------- modes & refs ---------- */
+function setMode(mode){
+  S.mode=mode;store.set('mode',mode);S.modelId=store.get('model.'+mode,S.modelId);
+  $$('.modes button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===mode));
+  $('#refField').hidden=mode!=='reference';$('#transHint').hidden=mode!=='transparent';
+  const m=pickModelFor(mode);if(m)S.modelId=m.id;
+  renderModelSelect();renderModelCard();renderRefs();
+  $('#negField').hidden=model()&&model().negative===false;
+  updateStatus();
+}
+function renderRefs(){
+  const m=model(),max=m?.max_refs||3,box=$('#refs');box.innerHTML='';
+  S.refs.forEach((r,i)=>{const b=document.createElement('div');b.className='ref filled';b.innerHTML=`<img alt="Reference ${i+1}"><button class="x" aria-label="Remove reference ${i+1}">×</button>`;b.querySelector('img').src=r.src;b.querySelector('.x').onclick=()=>{S.refs.splice(i,1);renderRefs()};box.append(b)});
+  const slots=Math.max(3-S.refs.length,S.refs.length<max?1:0);
+  for(let i=0;i<slots;i++){const b=document.createElement('button');b.className='ref';b.type='button';b.textContent='+ Add';b.onclick=()=>$('#refFile').click();box.append(b)}
+  $('#refCount').textContent=S.refs.length?`· ${S.refs.length}/${max}`:'';
+}
+function addRefFiles(files){
+  const m=model(),max=m?.max_refs||3;
+  for(const f of files){
+    if(!/^image\/(png|jpeg|webp)$/.test(f.type)){toast('Use PNG, JPEG or WebP images.');continue}
+    if(S.refs.length>=max){toast(`This model takes up to ${max} references.`);break}
+    const fr=new FileReader();fr.onload=()=>{S.refs.push({src:fr.result,data:fr.result});renderRefs()};fr.readAsDataURL(f);
+  }
+}
+
+/* ---------- preview & library ---------- */
+function show(item){
+  S.current=item;
+  $('#empty').hidden=!!item;$('#glow').style.opacity=item?0:'';$('#view').hidden=!item;
+  $('#stage').classList.toggle('alpha',!!item?.alpha);
+  for(const id of ['#exportBtn','#useRef','#editBtn','#delBtn','#upBtn'])$(id).disabled=!item;
+  if(item){$('#img').src=item.url;$('#badge').textContent=item.mode==='upscale'?`Upscale ${item.scale}× · ${item.width} × ${item.height}${item.alpha?' · alpha':''} · ${item.upscaler}`:`${MODE_NAMES[item.mode]||'Image'} · ${item.width} × ${item.height} · seed ${item.seed}${item.alpha?' · alpha':''} · ${item.model}`;$('#img').alt=item.prompt}
+  else $('#badge').textContent='Preview · no image yet';
+  $$('.thumb').forEach(t=>t.classList.toggle('on',!!item&&t.dataset.id===item.id));
+}
+function renderGallery(){
+  const g=$('#gallery');g.innerHTML='';
+  if(!S.library.length){for(let i=0;i<4;i++){const d=document.createElement('div');d.className='thumb ph';d.setAttribute('aria-hidden','true');g.append(d)}return}
+  for(const it of S.library.slice(0,60)){
+    const b=document.createElement('button');b.className='thumb'+(it.alpha?' alpha':'');b.dataset.id=it.id;b.title=it.prompt;
+    b.innerHTML='<img loading="lazy" alt="">';b.querySelector('img').src=it.url;b.querySelector('img').alt=it.prompt;
+    b.onclick=()=>show(it);g.append(b);
+  }
+  $$('.thumb').forEach(t=>t.classList.toggle('on',!!S.current&&t.dataset.id===S.current.id));
+}
+function asReference(item,replace){
+  if(replace)S.refs=[];
+  const m=pickModelFor('reference');
+  if(!m){toast('No installed model supports reference images.');return}
+  S.refs.push({src:item.url,data:item.url});
+  setMode('reference');
+  if(replace){$('#prompt').value='';$('#prompt').placeholder='Describe the change, e.g. “turn it into a pencil sketch, keep the composition”';$('#prompt').focus()}
+  toast(replace?'Editing this image. Describe the change.':'Added as a reference.');
+}
+
+/* ---------- render ---------- */
+function setBusy(b){
+  S.busy=b;document.body.classList.toggle('busy',b);
+  const g=$('#generate');g.textContent=b?'Stop':'Generate';g.classList.toggle('stop',b);
+  updateStatus();
+}
+function updateStatus(text){
+  const m=model();let t=text,cls='';
+  if(!t){
+    if(S.busy)t='Rendering';
+    else if(!m){t='No model';cls='bad'}
+    else if(m.status==='ready')t='Engine ready';
+    else if(m.status==='download'){t='Model downloads on first use';cls='warn'}
+    else{t='Engine not installed';cls='bad'}
+  }
+  $('#statusText').textContent=t;$('#statusDot').className='dot '+cls;
+}
+async function generate(){
+  if(S.busy){await api('/api/stop',{}).catch(()=>{});return}
+  const m=model(),size=currentSize();hideErr();
+  if(!$('#keepSeed').checked)$('#seed').value='';
+  const body={mode:S.mode,model_id:S.modelId,prompt:$('#prompt').value,negative:$('#negative').value,width:size.w,height:size.h,seed:$('#seed').value.trim(),
+    steps:$('#steps').disabled?null:(+$('#steps').value||null),guidance:$('#guidance').disabled?null:+$('#guidance').value,turbo:$('#turbo').checked,refs:S.mode==='reference'?S.refs.map(r=>r.data):[]};
+  store.set('prompt',body.prompt);store.set('negative',body.negative);
+  try{const job=await api('/api/render',body);setBusy(true);$('#seed').value=job.seed;poll(job.id)}
+  catch(e){showErr(e.message)}
+}
+async function poll(){
+  let j;try{j=await api('/api/job')}catch{setTimeout(poll,1500);return}
+  if(j.status==='running'){
+    setBusy(true);
+    const pct=j.progress||0;$('#bar').classList.toggle('indef',!pct);$('#bar i').style.width=(pct*100)+'%';
+    $('#pLeft').textContent=pct?`${j.model} · ${Math.round(pct*100)}%`:`${j.model} · loading`;
+    $('#pRight').textContent=`${j.elapsed} s`;updateStatus(`Rendering · ${j.elapsed} s`);
+    if($('#log').classList.contains('show')){const l=$('#log');l.textContent=(j.command?'$ '+j.command+'\n\n':'')+j.log;l.scrollTop=l.scrollHeight}
+    setTimeout(poll,1000);return;
+  }
+  setBusy(false);
+  if(j.status==='done'&&j.media&&!S.library.some(x=>x.id===j.media.id)){S.library.unshift(j.media);renderGallery();show(j.media);toast(`Done in ${j.elapsed} s`)}
+  if(j.status==='error'){showErr(j.error);S.lastLog=(j.command?'$ '+j.command+'\n\n':'')+j.log}
+  if(j.status==='stopped')toast('Stopped.');
+}
+function showErr(msg){const e=$('#err');e.innerHTML=esc(msg)+'<button id="errLog">Details</button><button id="errX">Dismiss</button>';e.classList.add('show');
+  $('#errLog').onclick=()=>{toggleLog(true)};$('#errX').onclick=hideErr}
+function hideErr(){$('#err').classList.remove('show')}
+async function toggleLog(force){
+  const l=$('#log'),on=force??!l.classList.contains('show');l.classList.toggle('show',on);
+  if(on){const j=await api('/api/job').catch(()=>({}));l.textContent=j.log?((j.command?'$ '+j.command+'\n\n':'')+j.log):'No render log yet.';l.scrollTop=l.scrollHeight}
+}
+
+/* ---------- dialogs ---------- */
+function renderModelsDlg(){
+  $('#mlist').innerHTML=S.models.map(m=>`<div class="mrow ${m.id===S.modelId?'cur':''}">
+    <div><h4>${esc(m.name)} ${statusTag(m)} ${m.tested?'<span class="tag">Tested</span>':''} ${m.source==='custom'?'<span class="tag">Yours</span>':''}</h4>
+    <p>${esc(m.note||'')}</p>
+    <div class="chips">${m.modes.map(x=>`<span class="chip on">${MODE_NAMES[x]}</span>`).join('')}<span class="chip">${esc(m.engine)}</span>${m.download?`<span class="chip">${esc(m.download)}</span>`:''}</div>
+    <p>${esc(m.license||'')}${m.status!=='ready'?' · '+esc(m.status_text):''}</p><div class="links">${linksHTML(m)}</div></div>
+    <div class="side"><button class="btn" data-use="${m.id}" ${m.status==='missing'?'disabled':''}>${m.id===S.modelId?'In use':'Use'}</button>${m.source==='custom'?`<button class="btn ghost" data-rm="${m.id}">Remove</button>`:''}</div></div>`).join('');
+  $('#ulist').innerHTML=S.upscalers.map(u=>`<div class="mrow"><div><h4>${esc(u.name)} ${statusTag(u)} ${u.tested?'<span class="tag">Tested</span>':''}</h4>
+    <p>${esc(u.note)}</p><p>${esc(u.license)}${u.download?' · '+esc(u.download):''}${u.status!=='ready'?' · '+esc(u.status_text):''}</p><div class="links">${linksHTML(u)}</div></div></div>`).join('');
+  $('#elist').innerHTML=Object.entries(S.engines).map(([k,e])=>`<div class="mrow"><div><h4>${esc(e.name)}</h4><p>${esc(e.install)}</p></div><div class="side"><a class="btn" href="${esc(e.link)}" target="_blank" rel="noopener">Open ↗</a></div></div>`).join('');
+}
+function syncAddForm(){const e=$('#aEngine').value;$$('#addForm [data-eng]').forEach(d=>d.hidden=!d.dataset.eng.split(' ').includes(e))}
+async function refresh(){
+  const c=await api('/api/config');
+  Object.assign(S,{token:c.token,models:c.models,engines:c.engines,upscalers:c.upscalers,settings:c.settings,library:c.library});
+  $('#verLine').textContent='OpenPictalis '+c.version;return c;
+}
+
+/* ---------- wire up ---------- */
+$$('.modes button').forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
+$('#model').onchange=e=>{S.modelId=e.target.value;store.set('model.'+S.mode,S.modelId);renderModelCard();renderRefs();updateStatus();$('#negField').hidden=model().negative===false};
+$('#turbo').onchange=()=>{store.set('turbo',$('#turbo').checked);syncSliders()};
+$('#steps').oninput=e=>{const v=+e.target.value;setRange(e.target,v);$('#stepsVal').textContent=v||'auto';store.set('steps.'+S.modelId,v)};
+$('#guidance').oninput=e=>{const v=+e.target.value;setRange(e.target,v);$('#guidanceVal').textContent=v.toFixed(1);store.set('guidance.'+S.modelId,v)};
+$('#aspects').onclick=e=>{const a=e.target.closest('button')?.dataset.a;if(!a)return;S.aspect=a;store.set('aspect',a);renderSizes()};
+$('#size').onchange=e=>{S.tier=e.target.value==='custom'?'custom':+e.target.value;store.set('tier',S.tier);renderSizes()};
+for(const id of ['#cw','#ch'])$(id).oninput=()=>{store.set('custom',[+$('#cw').value,+$('#ch').value]);sizeNote()};
+$('#dice').onclick=()=>{$('#seed').value=Math.floor(Math.random()*2**32);$('#keepSeed').checked=true};
+$('#generate').onclick=generate;
+document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key==='Enter'){e.preventDefault();if(!S.busy)generate()}});
+$('#refFile').onchange=e=>{addRefFiles(e.target.files);e.target.value=''};
+const rf=$('#refField');
+rf.addEventListener('dragover',e=>{e.preventDefault();rf.classList.add('drop')});
+rf.addEventListener('dragleave',()=>rf.classList.remove('drop'));
+rf.addEventListener('drop',e=>{e.preventDefault();rf.classList.remove('drop');addRefFiles(e.dataTransfer.files)});
+document.addEventListener('paste',e=>{const files=[...e.clipboardData.files].filter(f=>f.type.startsWith('image/'));if(!files.length)return;e.preventDefault();if(S.mode!=='reference')setMode('reference');addRefFiles(files)});
+$('#fitBtn').onclick=()=>{$('#view').classList.add('fit');$('#fitBtn').setAttribute('aria-pressed','true');$('#fullBtn').setAttribute('aria-pressed','false')};
+$('#fullBtn').onclick=()=>{$('#view').classList.remove('fit');$('#fitBtn').setAttribute('aria-pressed','false');$('#fullBtn').setAttribute('aria-pressed','true')};
+$('#useRef').onclick=()=>S.current&&asReference(S.current,false);
+$('#editBtn').onclick=()=>S.current&&asReference(S.current,true);
+function renderUpscale(){
+  const it=S.current;if(!it)return;
+  if(!S.upscalers.some(u=>u.id===S.upId&&u.status!=='missing'))S.upId=(S.upscalers.find(u=>u.status==='ready')||S.upscalers[0]).id;
+  $('#uplist').innerHTML=S.upscalers.map(u=>`<label class="uprow ${u.status==='missing'?'off':''}"><input type="radio" name="up" value="${u.id}" ${u.id===S.upId?'checked':''} ${u.status==='missing'?'disabled':''}>
+    <div><h4>${esc(u.name)} ${statusTag(u)}</h4><p>${esc(u.status==='missing'?u.status_text:u.note)}</p>${it.alpha&&!u.alpha?'<p style="color:var(--rose)">Drops transparency.</p>':''}<div class="links">${linksHTML(u)}</div></div></label>`).join('');
+  const u=S.upscalers.find(x=>x.id===S.upId);
+  $$('#scales button').forEach(b=>{const n=+b.dataset.s,big=Math.max(it.width,it.height)*n>(u.max_side||8192);b.disabled=!u.scales.includes(n)||big;b.title=big?`Over ${u.max_side} px`:'';b.setAttribute('aria-pressed',n===S.upScale)});
+  if($(`#scales button[data-s="${S.upScale}"]`).disabled){const ok=$$('#scales button').find(b=>!b.disabled);if(ok){S.upScale=+ok.dataset.s;return renderUpscale()}}
+  $('#updims').textContent=`${it.width} × ${it.height} → ${it.width*S.upScale} × ${it.height*S.upScale}`;
+  $('#upGo').disabled=$$('#scales button').every(b=>b.disabled);
+}
+$('#upBtn').onclick=()=>{if(!S.current)return;S.upId=store.get('upscaler','');S.upScale=store.get('upscale',2);renderUpscale();$('#upDlg').showModal()};
+$('#uplist').onchange=e=>{S.upId=e.target.value;store.set('upscaler',S.upId);renderUpscale()};
+$('#scales').onclick=e=>{const b=e.target.closest('button');if(!b||b.disabled)return;S.upScale=+b.dataset.s;store.set('upscale',S.upScale);renderUpscale()};
+$('#upGo').onclick=async()=>{
+  if(S.busy){toast('Wait for the current render to finish.');return}
+  hideErr();
+  try{await api('/api/upscale',{media_id:S.current.id,upscaler_id:S.upId,scale:S.upScale});$('#upDlg').close();setBusy(true);poll()}
+  catch(e){toast(e.message)}
+};
+$('#exportBtn').onclick=()=>{if(!S.current)return;const a=document.createElement('a');a.href=S.current.url+'?download=1';a.download=S.current.filename;document.body.append(a);a.click();a.remove()};
+$('#delBtn').onclick=async()=>{if(!S.current||!confirm('Remove this image from the library? The file moves to .openpictalis-trash in the output folder.'))return;
+  try{S.library=await api('/api/delete',{ids:[S.current.id]});renderGallery();show(S.library[0]||null)}catch(e){showErr(e.message)}};
+$('#logBtn').onclick=()=>toggleLog();
+$('#modelsBtn').onclick=()=>{renderModelsDlg();syncAddForm();$('#modelsDlg').showModal()};
+$('#settingsBtn').onclick=()=>{const s=S.settings;$('#sOut').value=s.output_dir;$('#sLora').value=s.lora_dir;$('#sDt').value=s.drawthings_cli;$('#sDtm').value=s.drawthings_models_dir;$('#sHf').value=s.hf_cache;$('#sEs').value=s.realesrgan_cli;$('#sEsm').value=s.realesrgan_models_dir;$('#settingsDlg').showModal()};
+$$('[data-close]').forEach(b=>b.onclick=()=>b.closest('dialog').close());
+$('#mlist').onclick=async e=>{
+  const use=e.target.closest('[data-use]')?.dataset.use,rm=e.target.closest('[data-rm]')?.dataset.rm;
+  if(use){const m=S.models.find(x=>x.id===use);if(!m.modes.includes(S.mode))S.mode=m.modes[0];S.modelId=use;store.set('model.'+S.mode,use);setMode(S.mode);S.modelId=use;renderModelSelect();renderModelCard();renderModelsDlg();updateStatus();toast('Now using '+m.name)}
+  if(rm&&confirm('Remove this model from the list? No files are deleted.')){try{await api('/api/models/remove',{id:rm});await refresh();setMode(S.mode);renderModelsDlg()}catch(err){toast(err.message)}}
+};
+$('#aEngine').onchange=syncAddForm;
+$('#addForm').onsubmit=async e=>{e.preventDefault();
+  const body={name:$('#aName').value,engine:$('#aEngine').value,command:$('#aCommand').value,model:$('#aModel').value,base_model:$('#aBase').value,quantize:$('#aQuant').value,
+    template:$('#aTemplate').value,steps:$('#aSteps').value,guidance:$('#aGuidance').value,link:$('#aLink').value,modes:$$('[name=am]:checked').map(c=>c.value)};
+  try{const m=await api('/api/models',body);await refresh();S.modelId=m.id;setMode(m.modes.includes(S.mode)?S.mode:m.modes[0]);renderModelsDlg();e.target.reset();syncAddForm();toast('Added '+m.name)}catch(err){toast(err.message)}};
+$('#settingsForm').onsubmit=async e=>{e.preventDefault();
+  try{S.settings=await api('/api/settings',Object.fromEntries(new FormData(e.target)));await refresh();setMode(S.mode);$('#settingsDlg').close();toast('Settings saved')}catch(err){toast(err.message)}};
+
+(async function init(){
+  try{
+    const c=await refresh();
+    S.aspect=store.get('aspect','1:1');S.tier=store.get('tier',1024);
+    $('#prompt').value=store.get('prompt','');$('#negative').value=store.get('negative','');
+    $('#turbo').checked=store.get('turbo',true);
+    const mode=store.get('mode','generate');S.modelId=store.get('model.'+mode,'');
+    setMode(mode);renderGallery();show(S.library[0]||null);
+    if(c.job.status==='running'){setBusy(true);poll()}
+  }catch(e){updateStatus('Server offline');showErr('Cannot reach the OpenPictalis server. Start it with: python3 -m openpictalis')}
+})();
+</script>
+</body>
+</html>
