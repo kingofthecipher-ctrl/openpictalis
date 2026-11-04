@@ -1,0 +1,367 @@
+{
+  "_comment": "Suggested models. Each entry tells OpenPictalis which engine runs it and how. Users can add their own in the app (Models → Add model); those are stored outside the repo.",
+  "models": [
+    {
+      "id": "qwen-image-2.1-4bit",
+      "name": "Qwen-Image 2.1 · 4-bit",
+      "family": "Qwen",
+      "engine": "mflux",
+      "commands": {
+        "generate": "mflux-generate-qwen-2.1-edit",
+        "reference": "mflux-generate-qwen-2.1-edit",
+        "transparent": "mflux-generate-qwen-2.1-edit"
+      },
+      "model": "OsaurusAI/Qwen-Image-2.1-mflux-4bit",
+      "repo": "OsaurusAI/Qwen-Image-2.1-mflux-4bit",
+      "modes": [
+        "generate",
+        "reference",
+        "transparent"
+      ],
+      "max_refs": 10,
+      "size_unit": 32,
+      "max_area": 4194304,
+      "steps": 30,
+      "guidance": 4.0,
+      "negative": true,
+      "extra_args": [
+        "--low-ram",
+        "--vae-tiling",
+        "--mlx-cache-limit-gb",
+        "2"
+      ],
+      "transparent_prompt": "This is an RGBA image with transparency. {prompt}. The image has alpha channel and the background is transparent.",
+      "turbo": {
+        "label": "Viggle Turbo LoRA · 6 steps",
+        "file_glob": "*6step*.safetensors",
+        "steps": 6,
+        "guidance": 1.0,
+        "args": [
+          "--scheduler",
+          "viggle_turbo",
+          "--lora-paths",
+          "{lora}",
+          "--lora-scales",
+          "1.0",
+          "--no-bake-lora"
+        ],
+        "link": "https://huggingface.co/Viggle/Qwen-Image-2.1-viggle-turbo",
+        "file": "Qwen-Image-2.1-viggle-turbo-v0.3-6step-lora-r256.safetensors",
+        "download": "1.3 GB"
+      },
+      "download": "≈ 10.6 GB",
+      "license": "Qwen Research License (check terms before commercial use)",
+      "links": {
+        "weights": "https://huggingface.co/OsaurusAI/Qwen-Image-2.1-mflux-4bit",
+        "upstream": "https://huggingface.co/Qwen/Qwen-Image-2.1"
+      },
+      "note": "Recommended. Text-to-image, editing with up to 10 references, and true RGBA output.",
+      "tested": true,
+      "fast_area": 1048576
+    },
+    {
+      "id": "qwen-image-2.1-8bit",
+      "name": "Qwen-Image 2.1 · 8-bit",
+      "family": "Qwen",
+      "engine": "mflux",
+      "commands": {
+        "generate": "mflux-generate-qwen-2.1-edit",
+        "reference": "mflux-generate-qwen-2.1-edit",
+        "transparent": "mflux-generate-qwen-2.1-edit"
+      },
+      "model": "OsaurusAI/Qwen-Image-2.1-mflux-8bit",
+      "repo": "OsaurusAI/Qwen-Image-2.1-mflux-8bit",
+      "modes": [
+        "generate",
+        "reference",
+        "transparent"
+      ],
+      "max_refs": 10,
+      "size_unit": 32,
+      "max_area": 4194304,
+      "steps": 30,
+      "guidance": 4.0,
+      "negative": true,
+      "extra_args": [
+        "--low-ram",
+        "--vae-tiling",
+        "--mlx-cache-limit-gb",
+        "2"
+      ],
+      "transparent_prompt": "This is an RGBA image with transparency. {prompt}. The image has alpha channel and the background is transparent.",
+      "turbo": {
+        "label": "Viggle Turbo LoRA · 6 steps",
+        "file_glob": "*6step*.safetensors",
+        "steps": 6,
+        "guidance": 1.0,
+        "args": [
+          "--scheduler",
+          "viggle_turbo",
+          "--lora-paths",
+          "{lora}",
+          "--lora-scales",
+          "1.0",
+          "--no-bake-lora"
+        ],
+        "link": "https://huggingface.co/Viggle/Qwen-Image-2.1-viggle-turbo",
+        "file": "Qwen-Image-2.1-viggle-turbo-v0.3-6step-lora-r256.safetensors",
+        "download": "1.3 GB"
+      },
+      "download": "≈ 18.5 GB",
+      "license": "Qwen Research License (check terms before commercial use)",
+      "links": {
+        "weights": "https://huggingface.co/OsaurusAI/Qwen-Image-2.1-mflux-8bit",
+        "upstream": "https://huggingface.co/Qwen/Qwen-Image-2.1"
+      },
+      "note": "Higher fidelity than 4-bit. Needs more memory (48 GB+ suggested).",
+      "tested": false,
+      "fast_area": 1048576
+    },
+    {
+      "id": "flux2-klein-4b-drawthings",
+      "name": "FLUX.2 Klein 4B · Draw Things",
+      "family": "FLUX.2",
+      "engine": "drawthings",
+      "model": "flux_2_klein_4b_q6p.ckpt",
+      "modes": [
+        "generate",
+        "reference"
+      ],
+      "max_refs": 4,
+      "size_unit": 64,
+      "max_area": 4194304,
+      "steps": 4,
+      "guidance": 1.0,
+      "negative": true,
+      "download": "Install from the Draw Things model list",
+      "license": "Apache-2.0",
+      "links": {
+        "weights": "https://huggingface.co/black-forest-labs/FLUX.2-klein-4B",
+        "engine": "https://github.com/drawthingsai/draw-things-community/releases"
+      },
+      "note": "Fastest option on Apple Silicon (about 10–15 s at 512 px). Uses the Draw Things CLI and its model folder.",
+      "tested": true,
+      "fast_area": 2359296
+    },
+    {
+      "id": "flux2-klein-4b",
+      "name": "FLUX.2 Klein 4B · MLX",
+      "family": "FLUX.2",
+      "engine": "mflux",
+      "commands": {
+        "generate": "mflux-generate-flux2",
+        "reference": "mflux-generate-flux2-edit"
+      },
+      "model": "flux2-klein-4b",
+      "repo": "black-forest-labs/FLUX.2-klein-4B",
+      "quantize": 8,
+      "modes": [
+        "generate",
+        "reference"
+      ],
+      "max_refs": 4,
+      "size_unit": 16,
+      "max_area": 4194304,
+      "steps": 4,
+      "guidance": 1.0,
+      "negative": true,
+      "download": "Downloads on first use",
+      "license": "Apache-2.0",
+      "links": {
+        "weights": "https://huggingface.co/black-forest-labs/FLUX.2-klein-4B"
+      },
+      "note": "Fast, permissively licensed. Same model as above, run through mflux instead of Draw Things.",
+      "tested": false,
+      "fast_area": 2359296
+    },
+    {
+      "id": "z-image-turbo",
+      "name": "Z-Image Turbo",
+      "family": "Z-Image",
+      "engine": "mflux",
+      "commands": {
+        "generate": "mflux-generate-z-image-turbo"
+      },
+      "model": "z-image-turbo",
+      "repo": "Tongyi-MAI/Z-Image-Turbo",
+      "quantize": 8,
+      "modes": [
+        "generate"
+      ],
+      "size_unit": 16,
+      "max_area": 4194304,
+      "steps": 9,
+      "guidance": null,
+      "negative": false,
+      "download": "Downloads on first use",
+      "license": "Apache-2.0",
+      "links": {
+        "weights": "https://huggingface.co/Tongyi-MAI/Z-Image-Turbo"
+      },
+      "note": "Photoreal text-to-image in about 9 steps. No reference input.",
+      "tested": false,
+      "fast_area": 1048576
+    },
+    {
+      "id": "qwen-image-edit-2511",
+      "name": "Qwen-Image-Edit 2511",
+      "family": "Qwen",
+      "engine": "mflux",
+      "commands": {
+        "reference": "mflux-generate-qwen-edit"
+      },
+      "model": "qwen-image-edit-2511",
+      "repo": "Qwen/Qwen-Image-Edit-2511",
+      "quantize": 4,
+      "modes": [
+        "reference"
+      ],
+      "max_refs": 3,
+      "size_unit": 16,
+      "max_area": 2359296,
+      "steps": 30,
+      "guidance": 4.0,
+      "negative": true,
+      "download": "Downloads on first use",
+      "license": "Apache-2.0",
+      "links": {
+        "weights": "https://huggingface.co/Qwen/Qwen-Image-Edit-2511"
+      },
+      "note": "Apache-licensed Qwen editor for reference-image edits.",
+      "tested": false,
+      "fast_area": 1048576
+    },
+    {
+      "id": "ming-image-design",
+      "name": "Ming-Image 0.1 Design",
+      "family": "Ming",
+      "engine": "mflux",
+      "commands": {
+        "generate": "mflux-generate-ming",
+        "transparent": "mflux-generate-ming"
+      },
+      "model": "ming-image-design",
+      "repo": "inclusionAI/Ming-Image-0.1-Design",
+      "modes": [
+        "generate",
+        "transparent"
+      ],
+      "size_unit": 16,
+      "max_area": 1048576,
+      "steps": null,
+      "guidance": null,
+      "negative": true,
+      "transparent_prompt": "{prompt}, isolated on a transparent background",
+      "download": "Downloads on first use",
+      "license": "MIT",
+      "links": {
+        "weights": "https://huggingface.co/inclusionAI/Ming-Image-0.1-Design"
+      },
+      "note": "Design-focused model with native RGBA output — logos, stickers, cut-outs.",
+      "tested": false,
+      "fast_area": 1048576
+    }
+  ],
+  "engines": {
+    "mflux": {
+      "name": "mflux (MLX, Apple Silicon)",
+      "install": "uv tool install --upgrade mflux",
+      "link": "https://github.com/mflux-community/mflux"
+    },
+    "drawthings": {
+      "name": "Draw Things CLI",
+      "install": "Download draw-things-cli from the Draw Things community releases, or set its path in Settings",
+      "link": "https://github.com/drawthingsai/draw-things-community/releases"
+    },
+    "command": {
+      "name": "Custom command",
+      "install": "Any command-line generator. Placeholders: {prompt} {negative} {width} {height} {seed} {steps} {guidance} {output} {refs}",
+      "link": "https://github.com/kingofthecipher-ctrl/openpictalis/blob/main/MODELS.md#custom-models"
+    }
+  },
+  "upscalers": [
+    {
+      "id": "realesrgan-x4plus",
+      "name": "Real-ESRGAN x4plus",
+      "engine": "realesrgan",
+      "model": "realesrgan-x4plus",
+      "native_scale": 4,
+      "scales": [
+        2,
+        4
+      ],
+      "max_side": 8192,
+      "alpha": true,
+      "license": "BSD-3-Clause",
+      "download": "≈ 52 MB macOS zip (binary + models)",
+      "links": {
+        "weights": "https://github.com/xinntao/Real-ESRGAN",
+        "engine": "https://github.com/xinntao/Real-ESRGAN/releases/tag/v0.2.5.0"
+      },
+      "note": "Recommended. Fast, sharp, keeps transparency. Best for photos and realistic renders. 2× runs 4× then scales down.",
+      "tested": true
+    },
+    {
+      "id": "realesrgan-x4plus-anime",
+      "name": "Real-ESRGAN x4plus Anime",
+      "engine": "realesrgan",
+      "model": "realesrgan-x4plus-anime",
+      "native_scale": 4,
+      "scales": [
+        2,
+        4
+      ],
+      "max_side": 8192,
+      "alpha": true,
+      "license": "BSD-3-Clause",
+      "download": "Included in the same Real-ESRGAN zip",
+      "links": {
+        "weights": "https://github.com/xinntao/Real-ESRGAN/blob/master/docs/anime_model.md",
+        "engine": "https://github.com/xinntao/Real-ESRGAN/releases/tag/v0.2.5.0"
+      },
+      "note": "For illustrations, stickers, logos and flat colour art.",
+      "tested": false
+    },
+    {
+      "id": "seedvr2-3b",
+      "name": "SeedVR2 3B",
+      "engine": "mflux",
+      "command": "mflux-upscale-seedvr2",
+      "model": "seedvr2-3b",
+      "repo": "numz/SeedVR2_comfyUI",
+      "scales": [
+        2,
+        4
+      ],
+      "max_side": 4096,
+      "alpha": false,
+      "extra_args": [
+        "--vae-tiling"
+      ],
+      "license": "Apache-2.0",
+      "download": "Downloads on first use",
+      "links": {
+        "weights": "https://huggingface.co/ByteDance-Seed/SeedVR2-3B",
+        "engine": "https://github.com/mflux-community/mflux"
+      },
+      "note": "Diffusion upscaler that invents fine detail. Slower and heavier; drops transparency.",
+      "tested": false
+    },
+    {
+      "id": "resize",
+      "name": "Simple resize (no AI)",
+      "engine": "sips",
+      "scales": [
+        2,
+        4
+      ],
+      "max_side": 8192,
+      "alpha": true,
+      "license": "Built into macOS",
+      "download": "",
+      "links": {},
+      "note": "Plain resampling with macOS sips. Instant, no new detail, keeps transparency.",
+      "tested": true
+    }
+  ]
+}
