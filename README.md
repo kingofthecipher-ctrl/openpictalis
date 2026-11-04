@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-2FD6C5?style=flat-square&labelColor=12141A"></a>
-  <a href="../../actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/kingofthecipher-ctrl/openpictalis/ci.yml?branch=main&style=flat-square&labelColor=12141A&label=build"></a>
+  <a href="docs/releasing.md"><img alt="Status: early preview" src="https://img.shields.io/badge/status-early%20preview-FFB547?style=flat-square&labelColor=12141A"></a>
   <img alt="Engines: Qwen + compatible open models" src="https://img.shields.io/badge/engines-Qwen%20%2B%20compatible%20open%20models-6C7CFF?style=flat-square&labelColor=12141A">
 </p>
 
@@ -42,11 +42,11 @@ That opens `http://127.0.0.1:8788`. Pick a model in the right-hand panel; sugges
 Prefer a Mac app window? Build one (needs Xcode command line tools):
 
 ```bash
-./macos/build-app.sh
+bash macos/build-app.sh
 open dist/OpenPictalis.app
 ```
 
-You can also double-click `start.command`.
+You can also run `bash start.command`.
 
 ## Models
 
