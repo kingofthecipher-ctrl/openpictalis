@@ -1,0 +1,6 @@
+include LICENSE THIRD_PARTY_NOTICES.md README.md CONTRIBUTING.md SECURITY.md MODELS.md CHANGELOG.md
+recursive-include openpictalis *.json *.html *.svg *.woff2 *.txt
+recursive-include tests *.py
+recursive-include macos *.swift *.sh *.icns *.svg
+recursive-include docs *.md *.png *.svg
+recursive-include .github *.yml *.md

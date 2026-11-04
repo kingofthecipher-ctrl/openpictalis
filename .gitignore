@@ -1,0 +1,31 @@
+__pycache__/
+*.pyc
+.build/
+dist/
+*.egg-info/
+.DS_Store
+.venv/
+# Never commit model weights, LoRAs or engine binaries
+*.safetensors
+*.ckpt
+*.ckpt-tensordata
+openpictalis/bin/
+
+# Local configuration, private data, and build tools
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+.pytest_cache/
+.coverage
+htmlcov/
+build/
+*.whl
+*.pt
+*.pth
+*.onnx
+*.gguf
+*.bin

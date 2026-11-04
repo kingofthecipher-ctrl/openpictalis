@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "openpictalis"
+dynamic = ["version"]
+description = "Open-source image generation and editing for Qwen and other open models."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE", "THIRD_PARTY_NOTICES.md", "openpictalis/web/assets/fonts/OFL-*.txt"]
+requires-python = ">=3.10"
+dependencies = []
+keywords = ["image-generation", "image-editing", "qwen", "mflux", "open-source"]
+classifiers = ["Operating System :: MacOS", "Programming Language :: Python :: 3", "Topic :: Multimedia :: Graphics"]
+
+[project.urls]
+Homepage = "https://github.com/kingofthecipher-ctrl/openpictalis"
+Repository = "https://github.com/kingofthecipher-ctrl/openpictalis"
+Issues = "https://github.com/kingofthecipher-ctrl/openpictalis/issues"
+
+[project.scripts]
+openpictalis = "openpictalis.server:main"
+
+[tool.setuptools]
+packages = ["openpictalis"]
+
+[tool.setuptools.dynamic]
+version = {attr = "openpictalis.__version__"}
+
+[tool.setuptools.package-data]
+openpictalis = ["catalog.json", "web/*.html", "web/assets/*", "web/assets/fonts/*"]

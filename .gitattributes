@@ -1,0 +1,2 @@
+# Preserve upstream font license notices byte-for-byte.
+openpictalis/web/assets/fonts/OFL-*.txt -whitespace
